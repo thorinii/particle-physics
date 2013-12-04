@@ -1,5 +1,6 @@
 package me.lachlanap.cpuparticlebasedphysics;
 
+import com.badlogic.gdx.math.Vector2;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,12 +40,12 @@ public class Body {
         return a;
     }
 
-    public float convertX(float inX, float inY) {
-        return inX * (float) Math.cos(a) - inY * (float) Math.sin(a) + x;
+    public float convertX(Vector2 in) {
+        return in.x * (float) Math.cos(a) - in.y * (float) Math.sin(a) + x;
     }
 
-    public float convertY(float inX, float inY) {
-        return inX * (float) Math.sin(a) + inY * (float) Math.cos(a) + y;
+    public float convertY(Vector2 in) {
+        return in.x * (float) Math.sin(a) + in.y * (float) Math.cos(a) + y;
     }
 
 }

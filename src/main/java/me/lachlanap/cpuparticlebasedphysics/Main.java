@@ -43,8 +43,8 @@ public class Main {
                 synchronized (bodies) {
                     for (Body b : bodies) {
                         for (Particle p : b.getParticles()) {
-                            circle.x = b.convertX(p.x, p.y) - Particle.RADIUS / 2;
-                            circle.y = b.convertY(p.x, p.y) - Particle.RADIUS / 2;
+                            circle.x = b.convertX(p.pos) - Particle.RADIUS / 2;
+                            circle.y = b.convertY(p.pos) - Particle.RADIUS / 2;
 
                             ((Graphics2D) g).fill(circle);
                         }
@@ -69,9 +69,9 @@ public class Main {
                     synchronized (bodies) {
                         if (e.getButton() == MouseEvent.BUTTON3) {
                             bodies.clear();
-                            bodies.add(BodyFactory.makeBox(2, 30, 30));
+                            bodies.add(BodyFactory.makeBox(10, 30, 30));
                         } else if (e.getButton() == MouseEvent.BUTTON1) {
-                            bodies.add(BodyFactory.makeBox(2, e.getX(), e.getY()));
+                            bodies.add(BodyFactory.makeBox(10, e.getX(), e.getY()));
                         }
                     }
                 }
@@ -80,7 +80,7 @@ public class Main {
                 public void mouseMoved(MouseEvent e) {
                     synchronized (bodies) {
                         if (e.getButton() == MouseEvent.BUTTON1) {
-                            bodies.add(BodyFactory.makeBox(2, e.getX(), e.getY()));
+                            bodies.add(BodyFactory.makeBox(10, e.getX(), e.getY()));
                         }
                     }
                 }
@@ -88,7 +88,7 @@ public class Main {
                 @Override
                 public void mouseDragged(MouseEvent e) {
                     synchronized (bodies) {
-                        bodies.add(BodyFactory.makeBox(2, e.getX(), e.getY()));
+                        bodies.add(BodyFactory.makeBox(10, e.getX(), e.getY()));
                     }
                 }
             }

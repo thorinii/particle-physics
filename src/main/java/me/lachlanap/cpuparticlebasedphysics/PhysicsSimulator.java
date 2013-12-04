@@ -22,8 +22,8 @@ public class PhysicsSimulator {
     public void simulate(List<Body> bodies, float dt) {
         for (Body b : bodies) {
             for (Particle p : b.getParticles()) {
-                tmp.add(new Particle(b.convertX(p.x, p.y),
-                                     b.convertY(p.x, p.y),
+                tmp.add(new Particle(b.convertX(p.pos),
+                                     b.convertY(p.pos),
                                      b));
             }
 
@@ -47,15 +47,18 @@ public class PhysicsSimulator {
     }
 
     private void processParticle(Particle p, float dt) {
+        Vector2 totalForce = new Vector2();
         float tforceX = 0;
         float tforceY = 0;
 
-        if (p.x < 0) {
+        if (p.pos.x < 0) {
             tforceX += K;
-        } else if (p.x > WALL) {
+        } else if (p.pos.x > WALL) {
             tforceX -= K;
         }
-        if (p.y > FLOOR) {
+        if (p.pos.y < 0) {
+            tforceY += K;
+        } else if (p.pos.y > FLOOR) {
             tforceY -= K;
         }
 
@@ -67,114 +70,20 @@ public class PhysicsSimulator {
             if (dist2 > RADIUS * RADIUS)
                 continue;
 
-            float rx = p.x - o.x;
-            float ry = p.y - o.y;
-
-            float vx = (p.x - p.px) - (o.x - o.px);
-            float vy = (p.y - p.py) - (o.y - o.py);
+            Vector2 distance = p.pos.cpy().sub(o.pos);
+            Vector2 relVel = p.velocity().sub(o.velocity());
 
             float rabs = (float) Math.abs(Math.sqrt(dist2));
 
-            float forceX = -K * (D - rabs) * (rx / rabs) - D * vx;
-            float forceY = -K * (D - rabs) * (ry / rabs) - D * vy;
-
-            if (forceX == Float.NaN)
-                throw new IllegalStateException("X Force on Particle " + p + " exerted by " + o + " is NaN");
-            if (forceY == Float.NaN)
-                throw new IllegalStateException("Y Force on Particle " + p + " exerted by " + o + " is NaN");
-
-            tforceX += forceX;
-            tforceY += forceY;
+            Vector2 force = distance.cpy().scl(-K * (D - rabs) / rabs).add(relVel.cpy().scl(D));
+            totalForce.add(force);
         }
 
         Vector2 bodyForce = bodyForces.get(p.body);
         if (bodyForce == null)
             throw new NullPointerException("Could not find body forces vector for " + p.body);
+        bodyForce.add(totalForce);
         bodyForce.x += tforceX;
         bodyForce.y += tforceY;
     }
-
-    /* private void processBody(Body body, float dt) {
-     * float bodyForceX = 0;
-     * float bodyForceY = 0;
-     *
-     * for (Particle p : body.getParticles()) {
-     * Particle newP = p.clone();
-     *
-     * newP.x = body.convertX(newP.x, newP.y);
-     * newP.y = body.convertY(newP.x, newP.y);
-     *
-     * float tforceX = 0;
-     * float tforceY = 0;
-     *
-     * if (newP.y < RADIUS) {
-     * //tforceY += K;
-     * //newP.y = RADIUS;
-     *
-     * //if (p.py > RADIUS)
-     * // newP.py = -(p.py - RADIUS) + RADIUS;
-     * //else
-     * // newP.py = 0;
-     * } else if (newP.y > FLOOR) {
-     * tforceY -= K;
-     * newP.y = FLOOR - ((float) Math.random() * 0.1f);
-     *
-     * if (newP.py < FLOOR)
-     * newP.py = -(newP.py - FLOOR) + FLOOR;
-     * //else
-     * // newP.py = FLOOR;
-     * }
-     *
-     * if (newP.x < RADIUS) {
-     * newP.x = RADIUS;
-     *
-     * if (newP.px > RADIUS)
-     * newP.px = -(newP.px - RADIUS) + RADIUS;
-     * //else
-     * // newP.px = RADIUS;
-     * } else if (newP.x > WALL) {
-     * newP.x = WALL;
-     *
-     * if (newP.px > 0)
-     * newP.px = -(newP.px - WALL) + WALL;
-     * //else
-     * // newP.px = frame.getWidth();
-     * }
-     * for (Particle o : body.getParticles()) {
-     * if (p == o)
-     * continue;
-     *
-     * float dist2 = newP.dist2(o);
-     * if (dist2 > RADIUS * RADIUS)
-     * continue;
-     *
-     * float rx = newP.x - o.x;
-     * float ry = newP.y - o.y;
-     *
-     * float vx = (newP.x - newP.px) - (o.x - o.px);
-     * float vy = (newP.y - newP.py) - (o.y - o.py);
-     *
-     * float rabs = (float) Math.abs(Math.sqrt(dist2));
-     *
-     * float forceX = -K * (D - rabs) * (rx / rabs) - D * vx;
-     * float forceY = -K * (D - rabs) * (ry / rabs) - D * vy;
-     *
-     * tforceX += forceX;
-     * tforceY += forceY;
-     * }
-     *
-     * //tforceX *= D;
-     * //tforceY *= D;
-     *
-     * newP.update(0.0166f, tforceX, tforceY);
-     *
-     * bodyForceX += tforceX;
-     * bodyForceY += tforceY;
-     * }
-     *
-     * body.vx += (bodyForceX) * dt;
-     * body.vy += (9.81f + bodyForceY) * dt;
-     * body.x = body.x + body.vx * dt;
-     * body.y = body.y + body.vy * dt;
-     * } */
 }
