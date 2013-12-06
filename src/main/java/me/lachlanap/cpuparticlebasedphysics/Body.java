@@ -15,6 +15,7 @@ public class Body {
     public float x, y;
     public float vx, vy;
     public float a;
+    public float va;
 
     public Body() {
         this.particles = new ArrayList<>();
@@ -38,6 +39,10 @@ public class Body {
 
     public float getA() {
         return a;
+    }
+
+    public float getMass() {
+        return particles.size();
     }
 
     public float convertX(Vector2 in) {

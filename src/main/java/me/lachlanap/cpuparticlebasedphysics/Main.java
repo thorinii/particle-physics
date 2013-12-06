@@ -69,9 +69,8 @@ public class Main {
                     synchronized (bodies) {
                         if (e.getButton() == MouseEvent.BUTTON3) {
                             bodies.clear();
-                            bodies.add(BodyFactory.makeBox(10, 30, 30));
                         } else if (e.getButton() == MouseEvent.BUTTON1) {
-                            bodies.add(BodyFactory.makeBox(10, e.getX(), e.getY()));
+                            bodies.add(BodyFactory.makeBox(SIZE_OF_OBJECT, e.getX(), e.getY()));
                         }
                     }
                 }
@@ -80,7 +79,7 @@ public class Main {
                 public void mouseMoved(MouseEvent e) {
                     synchronized (bodies) {
                         if (e.getButton() == MouseEvent.BUTTON1) {
-                            bodies.add(BodyFactory.makeBox(10, e.getX(), e.getY()));
+                            bodies.add(BodyFactory.makeBox(SIZE_OF_OBJECT, e.getX(), e.getY()));
                         }
                     }
                 }
@@ -88,7 +87,7 @@ public class Main {
                 @Override
                 public void mouseDragged(MouseEvent e) {
                     synchronized (bodies) {
-                        bodies.add(BodyFactory.makeBox(10, e.getX(), e.getY()));
+                        bodies.add(BodyFactory.makeBox(SIZE_OF_OBJECT, e.getX(), e.getY()));
                     }
                 }
             }
@@ -115,8 +114,12 @@ public class Main {
             Thread.sleep((int) (TIMESTEP * 1000));
         }
     }
+
     @Constant(name = "FPS", constraints = "0,100")
     public static int FPS = 50;
     public static int FLOOR = 350;
     public static int WALL = 350;
+
+    @Constant(name = "Size of Object", constraints = "1,100")
+    public static int SIZE_OF_OBJECT = 1;
 }
