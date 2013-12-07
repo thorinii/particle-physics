@@ -12,8 +12,8 @@ public class Body {
 
     private final List<Particle> particles;
 
-    public float x, y;
-    public float vx, vy;
+    public final Vector2 pos = new Vector2();
+    public final Vector2 vel = new Vector2();
     public float a;
     public float va;
 
@@ -29,14 +29,6 @@ public class Body {
         return particles;
     }
 
-    public float getX() {
-        return x;
-    }
-
-    public float getY() {
-        return y;
-    }
-
     public float getA() {
         return a;
     }
@@ -45,12 +37,21 @@ public class Body {
         return particles.size();
     }
 
+    public Vector2 convert(Vector2 in) {
+        float ca = (float) Math.cos(a);
+        float sa = (float) Math.sin(a);
+
+        float convX = in.x * ca - in.y * sa + pos.x;
+        float convY = in.x * sa + in.y * ca + pos.y;
+        return new Vector2(convX, convY);
+    }
+
     public float convertX(Vector2 in) {
-        return in.x * (float) Math.cos(a) - in.y * (float) Math.sin(a) + x;
+        return in.x * (float) Math.cos(a) - in.y * (float) Math.sin(a) + pos.x;
     }
 
     public float convertY(Vector2 in) {
-        return in.x * (float) Math.sin(a) + in.y * (float) Math.cos(a) + y;
+        return in.x * (float) Math.sin(a) + in.y * (float) Math.cos(a) + pos.y;
     }
 
 }

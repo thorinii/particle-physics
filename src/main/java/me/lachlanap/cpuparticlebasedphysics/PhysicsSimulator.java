@@ -27,9 +27,9 @@ public class PhysicsSimulator {
     public void simulate(List<Body> bodies, float dt) {
         for (Body b : bodies) {
             for (Particle p : b.getParticles()) {
-                tmp.add(new Particle(b.convertX(p.pos),
-                                     b.convertY(p.pos),
-                                     b));
+                Vector2 vel = b.vel.cpy().add(-b.a * p.pos.y, b.a * p.pos.x);
+
+                tmp.add(new Particle(b.convert(p.pos), b).setVelocity(vel));
             }
 
             bodyForces.put(b, new Vector2(0, 0));
@@ -37,20 +37,22 @@ public class PhysicsSimulator {
         }
 
         for (Particle p : tmp)
-            processParticle(p, p.pos.cpy().sub(p.body.x, p.body.y), dt);
+            processParticle(p, p.pos.cpy().sub(p.body.pos.x, p.body.pos.y), dt);
 
         for (Body b : bodies) {
             Vector2 bodyForce = bodyForces.get(b);
             float torque = bodyTorques.get(b).x;
 
-            b.vx += (bodyForce.x / b.getMass()) * dt;
-            b.vy += (9.81f + bodyForce.y / b.getMass()) * dt;
+            b.vel.x += (bodyForce.x / b.getMass()) * dt;
+            b.vel.y += (9.81f + bodyForce.y / b.getMass()) * dt;
 
-            b.x = b.x + b.vx * dt;
-            b.y = b.y + b.vy * dt;
+            b.vel.scl(0.99f);
+
+            b.pos.x = b.pos.x + b.vel.x * dt;
+            b.pos.y = b.pos.y + b.vel.y * dt;
 
 
-            b.va += (torque / b.getMass()) * dt;
+            b.va += (-torque / b.getMass()) * dt;
             b.va *= .999f;
 
             b.a += b.va * dt;
@@ -62,18 +64,20 @@ public class PhysicsSimulator {
 
     private void processParticle(Particle p, Vector2 particleDisplacement, float dt) {
         Vector2 totalForce = new Vector2();
-        float tforceX = 0;
-        float tforceY = 0;
 
         if (p.pos.x < 0) {
-            tforceX += K;
+            float dist = Particle.RADIUS - p.pos.x;
+            totalForce.x += dist * -K * (Particle.RADIUS * 2 - dist) * (1 / dist) + -p.vel.x * DAMPING;
         } else if (p.pos.x > WALL) {
-            tforceX -= K;
+            float dist = WALL - p.pos.x;
+            totalForce.x += dist * -K * (Particle.RADIUS * 2 - dist) * (1 / dist) + -p.vel.x * DAMPING;
         }
         if (p.pos.y < 0) {
-            tforceY += K;
+            float dist = Particle.RADIUS - p.pos.y;
+            totalForce.y += dist * -K * (Particle.RADIUS * 2 - dist) * (1 / dist) + -p.vel.y * DAMPING;
         } else if (p.pos.y > FLOOR) {
-            tforceY -= K;
+            float dist = FLOOR - p.pos.y;
+            totalForce.y += dist * -K * (Particle.RADIUS * 2 - dist) * (1 / dist) + -p.vel.y * DAMPING;
         }
 
         for (Particle o : tmp) {
@@ -83,14 +87,25 @@ public class PhysicsSimulator {
             float dist2 = p.dist2(o);
             if (dist2 > RADIUS * RADIUS)
                 continue;
+            else if (dist2 < 0.01f) {
+                totalForce.x += 1;
+                totalForce.y += 1;
+                continue;
+            }
 
-            Vector2 distance = p.pos.cpy().sub(o.pos);
-            Vector2 relVel = p.velocity().sub(o.velocity());
+            Vector2 distance = o.pos.cpy().sub(p.pos);
+            Vector2 relVel = o.vel.cpy().sub(p.vel);
 
-            float rabs = (float) Math.abs(Math.sqrt(dist2));
+            float rabs = distance.len();
 
-            Vector2 springForce;
-            Vector2 force = distance.cpy().scl(-K * (D - rabs) / rabs).add(relVel.cpy().scl(D));
+            // Fspring = -K(distance)(Diameter - |distance|) / |distance|
+            Vector2 springForce
+                    = distance.cpy().scl(-K).scl(Particle.RADIUS * 2 - rabs).scl(1 / rabs);
+
+            // Fdamping = D(relvel)
+            Vector2 dampingForce = relVel.cpy().scl(DAMPING);
+
+            Vector2 force = springForce.add(dampingForce);
             totalForce.add(force);
         }
 
@@ -99,8 +114,6 @@ public class PhysicsSimulator {
             throw new NullPointerException("Could not find body forces vector for " + p.body);
 
         bodyForce.add(totalForce);
-        bodyForce.x += tforceX;
-        bodyForce.y += tforceY;
 
         bodyTorques.get(p.body).x += totalForce.cpy().scl(0.001f).crs(particleDisplacement);
     }

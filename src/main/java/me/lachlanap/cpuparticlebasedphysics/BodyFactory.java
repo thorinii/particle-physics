@@ -9,8 +9,8 @@ public class BodyFactory {
     public static Body makeBox(int side, float x, float y) {
         Body b = new Body();
 
-        float shiftX = -side * Particle.RADIUS / 4f;
-        float shiftY = -side * Particle.RADIUS / 4f;
+        float shiftX = -side * Particle.RADIUS / 2f + Particle.RADIUS / 4f;
+        float shiftY = -side * Particle.RADIUS / 2f + Particle.RADIUS / 4f;
 
         for (int i = 0; i < side; i++) {
             for (int j = 0; j < side; j++) {
@@ -21,8 +21,7 @@ public class BodyFactory {
             }
         }
 
-        b.x = x;
-        b.y = y;
+        b.pos.set(x, y);
 
         return b;
     }
