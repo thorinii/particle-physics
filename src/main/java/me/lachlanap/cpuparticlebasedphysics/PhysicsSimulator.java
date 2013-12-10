@@ -43,19 +43,22 @@ public class PhysicsSimulator {
             Vector2 bodyForce = bodyForces.get(b);
             float torque = bodyTorques.get(b).x;
 
+
+            Vector2 oldLinearVel = b.vel.cpy();
+
             b.vel.x += (bodyForce.x / b.getMass()) * dt;
             b.vel.y += (9.81f + bodyForce.y / b.getMass()) * dt;
-
             b.vel.scl(0.99f);
 
-            b.pos.x = b.pos.x + b.vel.x * dt;
-            b.pos.y = b.pos.y + b.vel.y * dt;
+            b.pos.x = b.pos.x + (oldLinearVel.x + b.vel.x) * dt;
+            b.pos.y = b.pos.y + (oldLinearVel.y + b.vel.y) * 0.5f * dt;
 
 
+            float oldRotVel = b.va;
             b.va += (-torque / b.getMass()) * dt;
             b.va *= .999f;
 
-            b.a += b.va * dt;
+            b.a = b.a + (oldRotVel + b.va) * 0.5f * dt;
         }
 
         tmp.clear();
