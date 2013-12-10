@@ -8,7 +8,6 @@ import java.util.Map;
 import me.lachlanap.lct.Constant;
 
 import static me.lachlanap.cpuparticlebasedphysics.Main.FLOOR;
-import static me.lachlanap.cpuparticlebasedphysics.Main.WALL;
 import static me.lachlanap.cpuparticlebasedphysics.Particle.*;
 
 /**
@@ -54,11 +53,13 @@ public class PhysicsSimulator {
             b.pos.y = b.pos.y + (oldLinearVel.y + b.vel.y) * 0.5f * dt;
 
 
-            float oldRotVel = b.va;
-            b.va += (-torque / b.getMass()) * dt;
+            float oldAngularVel = b.va;
+            float angularAccel = torque / (0.5f * b.getMass() * b.getMaxRadius() * b.getMaxRadius());
+
+            b.va += -angularAccel * dt;
             b.va *= .999f;
 
-            b.a = b.a + (oldRotVel + b.va) * 0.5f * dt;
+            b.a = b.a + (oldAngularVel + b.va) * 0.5f * dt;
         }
 
         tmp.clear();
@@ -68,17 +69,18 @@ public class PhysicsSimulator {
     private void processParticle(Particle p, Vector2 particleDisplacement, float dt) {
         Vector2 totalForce = new Vector2();
 
-        if (p.pos.x < 0) {
-            float dist = Particle.RADIUS - p.pos.x;
-            totalForce.x += dist * -K * (Particle.RADIUS * 2 - dist) * (1 / dist) + -p.vel.x * DAMPING;
-        } else if (p.pos.x > WALL) {
-            float dist = WALL - p.pos.x;
-            totalForce.x += dist * -K * (Particle.RADIUS * 2 - dist) * (1 / dist) + -p.vel.x * DAMPING;
-        }
-        if (p.pos.y < 0) {
-            float dist = Particle.RADIUS - p.pos.y;
-            totalForce.y += dist * -K * (Particle.RADIUS * 2 - dist) * (1 / dist) + -p.vel.y * DAMPING;
-        } else if (p.pos.y > FLOOR) {
+//        if (p.pos.x < 0) {
+//            float dist = Particle.RADIUS - p.pos.x;
+//            totalForce.x += dist * -K * (Particle.RADIUS * 2 - dist) * (1 / dist) + -p.vel.x * DAMPING;
+//        } else if (p.pos.x > WALL) {
+//            float dist = WALL - p.pos.x;
+//            totalForce.x += dist * -K * (Particle.RADIUS * 2 - dist) * (1 / dist) + -p.vel.x * DAMPING;
+//        }
+//        if (p.pos.y < 0) {
+//            float dist = Particle.RADIUS - p.pos.y;
+//            totalForce.y += dist * -K * (Particle.RADIUS * 2 - dist) * (1 / dist) + -p.vel.y * DAMPING;
+//        } else
+        if (p.pos.y > FLOOR) {
             float dist = FLOOR - p.pos.y;
             totalForce.y += dist * -K * (Particle.RADIUS * 2 - dist) * (1 / dist) + -p.vel.y * DAMPING;
         }
@@ -118,6 +120,6 @@ public class PhysicsSimulator {
 
         bodyForce.add(totalForce);
 
-        bodyTorques.get(p.body).x += totalForce.cpy().scl(0.001f).crs(particleDisplacement);
+        bodyTorques.get(p.body).x += totalForce.cpy().crs(particleDisplacement);
     }
 }

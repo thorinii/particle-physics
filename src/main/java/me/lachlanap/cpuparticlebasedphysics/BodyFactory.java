@@ -22,6 +22,7 @@ public class BodyFactory {
         }
 
         b.pos.set(x, y);
+        b.recalculate();
 
         return b;
     }

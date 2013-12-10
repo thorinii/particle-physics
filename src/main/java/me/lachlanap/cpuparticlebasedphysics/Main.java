@@ -66,9 +66,6 @@ public class Main {
 
                 g.setColor(Color.BLACK);
                 g.drawLine(0, Y_SHIFT + FLOOR, getWidth(), Y_SHIFT + FLOOR);
-                g.drawLine(0, Y_SHIFT, getWidth(), Y_SHIFT);
-                g.drawLine(X_SHIFT + WALL, 0, X_SHIFT + WALL, getHeight());
-                g.drawLine(X_SHIFT, 0, X_SHIFT, getHeight());
             }
 
             class MouseAdapterImpl extends MouseAdapter {
@@ -115,6 +112,7 @@ public class Main {
                                 particles.add(new Particle(v.sub(centre), body));
                             }
                             body.getParticles().addAll(particles);
+                            body.recalculate();
 
                             bodies.add(body);
 

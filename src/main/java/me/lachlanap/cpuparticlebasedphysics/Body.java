@@ -17,6 +17,8 @@ public class Body {
     public float a;
     public float va;
 
+    private float maxRadius;
+
     public Body() {
         this.particles = new ArrayList<>();
     }
@@ -36,6 +38,25 @@ public class Body {
     public float getMass() {
         return particles.size();
     }
+
+    public float getMaxRadius() {
+        return maxRadius;
+    }
+
+    public void recalculate() {
+        // TODO: calculate centre of mass & shift
+
+        float max2 = 0;
+
+        for (Particle p : particles) {
+            float particleDist2 = p.pos.len2();
+            if (particleDist2 > max2)
+                max2 = particleDist2;
+        }
+
+        maxRadius = (float) Math.sqrt(max2);
+    }
+
 
     public Vector2 convert(Vector2 in) {
         float ca = (float) Math.cos(a);
