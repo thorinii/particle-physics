@@ -28,6 +28,9 @@ public class Main {
 
         final JFrame frame = new JFrame("CPU Particle-Based Physics");
         frame.getContentPane().add(new JPanel() {
+            private boolean isDrawing;
+            private final List<Vector2> drawing = new ArrayList<>();
+
             {
                 MouseAdapterImpl impl = new MouseAdapterImpl(bodies);
                 addMouseListener(impl);
@@ -53,6 +56,15 @@ public class Main {
                     }
                 }
 
+                g.setColor(Color.GREEN);
+                for (Vector2 v : drawing) {
+                    circle.x = X_SHIFT + v.x - Particle.RADIUS / 2;
+                    circle.y = Y_SHIFT + v.y - Particle.RADIUS / 2;
+
+                    ((Graphics2D) g).fill(circle);
+                }
+
+                g.setColor(Color.BLACK);
                 g.drawLine(0, Y_SHIFT + FLOOR, getWidth(), Y_SHIFT + FLOOR);
                 g.drawLine(0, Y_SHIFT, getWidth(), Y_SHIFT);
                 g.drawLine(X_SHIFT + WALL, 0, X_SHIFT + WALL, getHeight());
@@ -63,8 +75,6 @@ public class Main {
 
                 private final List<Body> bodies;
 
-                private boolean isDrawing;
-                private final List<Vector2> drawing = new ArrayList<>();
 
                 public MouseAdapterImpl(
                         List<Body> bodies) {
@@ -111,6 +121,8 @@ public class Main {
                             drawing.clear();
                         }
                     }
+
+                    repaint();
                 }
 
                 @Override
