@@ -34,6 +34,12 @@ public class Particle implements Cloneable {
         this.body = b;
     }
 
+    public Particle(Vector2 position) {
+        pos.set(position);
+        body = null;
+    }
+
+
     public Particle(Vector2 position, Body b) {
         pos.set(position);
         this.body = b;

@@ -69,17 +69,6 @@ public class PhysicsSimulator {
     private void processParticle(Particle p, Vector2 particleDisplacement, float dt) {
         Vector2 totalForce = new Vector2();
 
-//        if (p.pos.x < 0) {
-//            float dist = Particle.RADIUS - p.pos.x;
-//            totalForce.x += dist * -K * (Particle.RADIUS * 2 - dist) * (1 / dist) + -p.vel.x * DAMPING;
-//        } else if (p.pos.x > WALL) {
-//            float dist = WALL - p.pos.x;
-//            totalForce.x += dist * -K * (Particle.RADIUS * 2 - dist) * (1 / dist) + -p.vel.x * DAMPING;
-//        }
-//        if (p.pos.y < 0) {
-//            float dist = Particle.RADIUS - p.pos.y;
-//            totalForce.y += dist * -K * (Particle.RADIUS * 2 - dist) * (1 / dist) + -p.vel.y * DAMPING;
-//        } else
         if (p.pos.y > FLOOR) {
             float dist = FLOOR - p.pos.y;
             totalForce.y += dist * -K * (Particle.RADIUS * 2 - dist) * (1 / dist) + -p.vel.y * DAMPING;

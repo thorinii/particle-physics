@@ -72,51 +72,33 @@ public class Main {
 
                 private final List<Body> bodies;
 
-
-                public MouseAdapterImpl(
-                        List<Body> bodies) {
+                public MouseAdapterImpl(List<Body> bodies) {
                     this.bodies = bodies;
                 }
 
                 @Override
                 public void mousePressed(MouseEvent e) {
-                    if (e.getButton() == MouseEvent.BUTTON2)
+                    if (e.getButton() == MouseEvent.BUTTON1)
                         isDrawing = true;
                 }
-
 
                 @Override
                 public void mouseReleased(MouseEvent e) {
                     synchronized (bodies) {
                         if (e.getButton() == MouseEvent.BUTTON3) {
                             bodies.clear();
-                        } else if (e.getButton() == MouseEvent.BUTTON1) {
-                            bodies.add(BodyFactory.makeBox(SIZE_OF_OBJECT,
-                                                           e.getX() - X_SHIFT,
-                                                           e.getY() - Y_SHIFT));
-                        } else {
-                            if (drawing.size() <= 1)
+                        } else if (isDrawing) {
+                            if (drawing.isEmpty())
                                 return;
-
-                            Vector2 centre = new Vector2();
-                            for (Vector2 v : drawing) {
-                                centre.add(v);
-                            }
-                            centre.div(drawing.size());
-
-                            Body body = new Body();
-                            body.pos.set(centre);
 
                             List<Particle> particles = new ArrayList<>();
                             for (Vector2 v : drawing) {
-                                particles.add(new Particle(v.sub(centre), body));
+                                particles.add(new Particle(v));
                             }
-                            body.getParticles().addAll(particles);
-                            body.recalculate();
 
-                            bodies.add(body);
-
+                            bodies.add(BodyFactory.makeBody(particles));
                             drawing.clear();
+                            isDrawing = false;
                         }
                     }
 
@@ -124,34 +106,7 @@ public class Main {
                 }
 
                 @Override
-                public void mouseMoved(MouseEvent e) {
-                    System.out.println("M");
-                    synchronized (bodies) {
-                        if (e.getButton() == MouseEvent.BUTTON1) {
-                            bodies.add(BodyFactory.makeBox(SIZE_OF_OBJECT,
-                                                           e.getX() - X_SHIFT,
-                                                           e.getY() - Y_SHIFT));
-                        } else if (e.getButton() == MouseEvent.BUTTON2) {
-                            Vector2 vec = new Vector2(e.getX() - X_SHIFT, e.getY() - Y_SHIFT);
-                            vec.x = (int) (vec.x / Particle.RADIUS) * Particle.RADIUS;
-                            vec.y = (int) (vec.y / Particle.RADIUS) * Particle.RADIUS;
-
-                            if (!drawing.contains(vec))
-                                drawing.add(vec);
-                        }
-                    }
-                }
-
-                @Override
                 public void mouseDragged(MouseEvent e) {
-                    System.out.println("D");
-                    if (e.getButton() == MouseEvent.BUTTON1)
-                        synchronized (bodies) {
-                            bodies.add(BodyFactory.makeBox(SIZE_OF_OBJECT,
-                                                           e.getX() - X_SHIFT,
-                                                           e.getY() - Y_SHIFT));
-                        }
-
                     if (isDrawing) {
                         Vector2 vec = new Vector2(e.getX() - X_SHIFT, e.getY() - Y_SHIFT);
                         vec.x = (int) (vec.x / Particle.RADIUS) * Particle.RADIUS;
@@ -159,9 +114,7 @@ public class Main {
 
                         if (!drawing.contains(vec)) {
                             drawing.add(vec);
-                            System.out.println("D2");
                         }
-                        System.out.println("D");
                     }
                 }
             }

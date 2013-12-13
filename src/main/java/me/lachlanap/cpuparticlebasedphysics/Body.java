@@ -2,6 +2,7 @@ package me.lachlanap.cpuparticlebasedphysics;
 
 import com.badlogic.gdx.math.Vector2;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -28,7 +29,7 @@ public class Body {
     }
 
     public List<Particle> getParticles() {
-        return particles;
+        return Collections.unmodifiableList(particles);
     }
 
     public float getA() {
@@ -44,17 +45,27 @@ public class Body {
     }
 
     public void recalculate() {
-        // TODO: calculate centre of mass & shift
+        Vector2 centre = new Vector2();
+        for (Particle p : particles)
+            centre.add(p.pos);
+
+        centre.div(particles.size());
+
+        pos.add(centre);
+        for (Particle p : particles)
+            p.pos.sub(centre);
+
 
         float max2 = 0;
-
         for (Particle p : particles) {
             float particleDist2 = p.pos.len2();
             if (particleDist2 > max2)
                 max2 = particleDist2;
         }
-
         maxRadius = (float) Math.sqrt(max2);
+
+        if (maxRadius == 0)
+            maxRadius = Particle.RADIUS;
     }
 
 

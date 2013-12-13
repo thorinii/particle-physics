@@ -1,5 +1,8 @@
 package me.lachlanap.cpuparticlebasedphysics;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  *
  * @author lachlan
@@ -25,5 +28,17 @@ public class BodyFactory {
         b.recalculate();
 
         return b;
+    }
+
+    public static Body makeBody(List<Particle> particlesToUse) {
+        List<Particle> particles = new ArrayList<>(particlesToUse);
+        Body body = new Body(particles);
+
+        for (Particle p : particles) {
+            p.body = body;
+        }
+
+        body.recalculate();
+        return body;
     }
 }
