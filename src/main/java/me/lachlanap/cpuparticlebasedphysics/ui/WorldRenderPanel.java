@@ -1,4 +1,4 @@
-package me.lachlanap.cpuparticlebasedphysics;
+package me.lachlanap.cpuparticlebasedphysics.ui;
 
 import com.badlogic.gdx.math.Vector2;
 import java.awt.Color;
@@ -11,6 +11,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.JPanel;
+import me.lachlanap.cpuparticlebasedphysics.Body;
+import me.lachlanap.cpuparticlebasedphysics.BodyFactory;
+import me.lachlanap.cpuparticlebasedphysics.Particle;
+import me.lachlanap.cpuparticlebasedphysics.World;
 
 import static me.lachlanap.cpuparticlebasedphysics.Main.FPS;
 import static me.lachlanap.cpuparticlebasedphysics.Main.STEPS;
@@ -19,7 +23,7 @@ import static me.lachlanap.cpuparticlebasedphysics.Main.STEPS;
  *
  * @author lachlan
  */
-class WorldRenderPanel extends JPanel {
+public class WorldRenderPanel extends JPanel {
 
     private final World world;
 

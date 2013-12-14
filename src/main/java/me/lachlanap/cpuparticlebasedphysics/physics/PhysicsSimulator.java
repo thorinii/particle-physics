@@ -1,10 +1,13 @@
-package me.lachlanap.cpuparticlebasedphysics;
+package me.lachlanap.cpuparticlebasedphysics.physics;
 
 import com.badlogic.gdx.math.Vector2;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import me.lachlanap.cpuparticlebasedphysics.Body;
+import me.lachlanap.cpuparticlebasedphysics.Particle;
+import me.lachlanap.cpuparticlebasedphysics.World;
 import me.lachlanap.lct.Constant;
 
 import static me.lachlanap.cpuparticlebasedphysics.Particle.*;

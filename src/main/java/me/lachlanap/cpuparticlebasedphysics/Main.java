@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JFrame;
 import javax.swing.Timer;
+import me.lachlanap.cpuparticlebasedphysics.ui.WorldRenderPanel;
 import me.lachlanap.lct.Constant;
 import me.lachlanap.lct.LCTManager;
 import me.lachlanap.lct.gui.LCTFrame;
@@ -31,9 +32,11 @@ public class Main {
         timer.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                if (FPS == 0)
+                    return;
                 wrp.repaint();
 
-                int timestep = 1000 / FPS;
+                int timestep = 1000 / Math.max(FPS, 1);
                 timer.setDelay(timestep);
             }
         });
