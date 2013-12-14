@@ -1,5 +1,6 @@
 package me.lachlanap.cpuparticlebasedphysics;
 
+import com.badlogic.gdx.math.Vector2;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -40,6 +41,9 @@ public class World {
 
     public void reset() {
         bodies.clear();
+    }
+
+    public void cutAlong(Vector2 to, Vector2 from) {
     }
 
 

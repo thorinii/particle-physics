@@ -24,10 +24,13 @@ class WorldRenderPanel extends JPanel {
     private final World world;
 
     private final List<Vector2> drawing = new ArrayList<>();
+    private final Vector2 laserBase = new Vector2();
+    private final Vector2 laserTarget = new Vector2();
 
     private int xShift = 0;
     private int yShift = 0;
     private boolean paused;
+    private boolean isDrawing, isLaser;
 
     private long lastTime;
     private float fps;
@@ -86,12 +89,16 @@ class WorldRenderPanel extends JPanel {
 
 
         g.setColor(Color.GREEN);
-
         for (Vector2 v : drawing) {
             circle.x = xShift + v.x - Particle.RADIUS / 2;
             circle.y = yShift + v.y - Particle.RADIUS / 2;
             g.fill(circle);
         }
+
+        g.setColor(Color.ORANGE);
+        if (isLaser)
+            g.drawLine(xShift + (int) laserBase.x, yShift + (int) laserBase.y,
+                       xShift + (int) laserTarget.x, yShift + (int) laserTarget.y);
 
 
         g.setColor(Color.BLACK);
@@ -102,21 +109,23 @@ class WorldRenderPanel extends JPanel {
 
     class MouseAdapterImpl extends MouseAdapter {
 
-        private boolean isDrawing;
 
         @Override
         public void mousePressed(MouseEvent e) {
-            if (e.getButton() == MouseEvent.BUTTON1 || e.getButton() == MouseEvent.BUTTON2) {
+            if (!e.isControlDown() && (e.getButton() == MouseEvent.BUTTON1 || e.getButton() == MouseEvent.BUTTON2)) {
                 paused = true;
                 isDrawing = true;
 
-                Vector2 vec = new Vector2(e.getX() - xShift, e.getY() - yShift);
-                vec.x = (int) (vec.x / Particle.RADIUS) * Particle.RADIUS;
-                vec.y = (int) (vec.y / Particle.RADIUS) * Particle.RADIUS;
+                Vector2 vec = coordsFromMouse(e);
 
                 if (!drawing.contains(vec)) {
                     drawing.add(vec);
                 }
+            } else if (e.getButton() == MouseEvent.BUTTON1 && e.isControlDown()) {
+                paused = true;
+                isLaser = true;
+
+                laserTarget.set(coordsFromMouse(e));
             }
         }
 
@@ -141,27 +150,36 @@ class WorldRenderPanel extends JPanel {
                 }
 
                 drawing.clear();
+            } else if (isLaser) {
+                world.cutAlong(laserBase, laserTarget);
             }
 
             paused = false;
             isDrawing = false;
+            isLaser = false;
             repaint();
         }
 
         @Override
         public void mouseDragged(MouseEvent e) {
             if (isDrawing) {
-                Vector2 vec = new Vector2(e.getX() - xShift, e.getY() - yShift);
-                vec.x = (int) (vec.x / Particle.RADIUS) * Particle.RADIUS;
-                vec.y = (int) (vec.y / Particle.RADIUS) * Particle.RADIUS;
+                Vector2 vec = coordsFromMouse(e);
 
-                if (!drawing.contains(vec)) {
+                if (!drawing.contains(vec))
                     drawing.add(vec);
-                }
-
-                repaint();
+            } else if (isLaser) {
+                laserBase.set(coordsFromMouse(e));
             }
+
+            repaint();
         }
+    }
+
+    private Vector2 coordsFromMouse(MouseEvent e) {
+        Vector2 vec = new Vector2(e.getX() - xShift, e.getY() - yShift);
+        vec.x = (int) (vec.x / Particle.RADIUS) * Particle.RADIUS;
+        vec.y = (int) (vec.y / Particle.RADIUS) * Particle.RADIUS;
+        return vec;
     }
 
 }
