@@ -27,7 +27,7 @@ class WorldRenderPanel extends JPanel {
 
     private int xShift = 0;
     private int yShift = 0;
-    private boolean isDrawing;
+    private boolean paused;
 
     private long lastTime;
     private float fps;
@@ -45,15 +45,15 @@ class WorldRenderPanel extends JPanel {
         xShift = getWidth() / 2;
         yShift = getHeight() / 2 - (int) world.getFloor() / 2;
 
-        if (!isDrawing)
+        if (!paused)
             updateWorld();
         paintWorld((Graphics2D) g);
 
-        long now = System.nanoTime();
-
-        fps = 1f / (float) ((now - lastTime) / 1000000000.0);
-
-        lastTime = now;
+        if (!paused) {
+            long now = System.nanoTime();
+            fps = 1f / (float) ((now - lastTime) / 1000000000.0);
+            lastTime = now;
+        }
     }
 
     private void updateWorld() {
@@ -66,26 +66,22 @@ class WorldRenderPanel extends JPanel {
         super.paintComponent(g);
 
         Ellipse2D.Float circle = new Ellipse2D.Float(0, 0, Particle.RADIUS, Particle.RADIUS);
+        for (Body b : world.getBodies()) {
+            g.setColor(Color.RED);
 
-        synchronized (world) {
-
-            for (Body b : world.getBodies()) {
-                g.setColor(Color.RED);
-
-                for (Particle p : b.getParticles()) {
-                    circle.x = xShift + b.convertX(p.pos) - Particle.RADIUS / 2;
-                    circle.y = yShift + b.convertY(p.pos) - Particle.RADIUS / 2;
-                    g.fill(circle);
-                }
-
-
-                g.setColor(Color.BLUE);
-
-                g.drawLine(xShift + (int) b.pos.x, yShift + (int) b.pos.y - 5,
-                           xShift + (int) b.pos.x, yShift + (int) b.pos.y + 5);
-                g.drawLine(xShift + (int) b.pos.x - 5, yShift + (int) b.pos.y,
-                           xShift + (int) b.pos.x + 5, yShift + (int) b.pos.y);
+            for (Particle p : b.getParticles()) {
+                circle.x = xShift + b.convertX(p.pos) - Particle.RADIUS / 2;
+                circle.y = yShift + b.convertY(p.pos) - Particle.RADIUS / 2;
+                g.fill(circle);
             }
+
+
+            g.setColor(Color.BLUE);
+
+            g.drawLine(xShift + (int) b.pos.x, yShift + (int) b.pos.y - 5,
+                       xShift + (int) b.pos.x, yShift + (int) b.pos.y + 5);
+            g.drawLine(xShift + (int) b.pos.x - 5, yShift + (int) b.pos.y,
+                       xShift + (int) b.pos.x + 5, yShift + (int) b.pos.y);
         }
 
 
@@ -106,9 +102,12 @@ class WorldRenderPanel extends JPanel {
 
     class MouseAdapterImpl extends MouseAdapter {
 
+        private boolean isDrawing;
+
         @Override
         public void mousePressed(MouseEvent e) {
             if (e.getButton() == MouseEvent.BUTTON1 || e.getButton() == MouseEvent.BUTTON2) {
+                paused = true;
                 isDrawing = true;
 
                 Vector2 vec = new Vector2(e.getX() - xShift, e.getY() - yShift);
@@ -123,35 +122,29 @@ class WorldRenderPanel extends JPanel {
 
         @Override
         public void mouseReleased(MouseEvent e) {
-            synchronized (world) {
-                if (e.getButton() == MouseEvent.BUTTON3) {
-                    world.reset();
-                } else if (isDrawing) {
-                    if (e.getButton() == MouseEvent.BUTTON1) {
-                        if (drawing.isEmpty())
-                            return;
+            if (e.getButton() == MouseEvent.BUTTON3) {
+                world.reset();
+            } else if (isDrawing) {
+                if (e.getButton() == MouseEvent.BUTTON1) {
+                    if (drawing.isEmpty())
+                        return;
 
-                        List<Particle> particles = new ArrayList<>();
-                        for (Vector2 v : drawing) {
-                            particles.add(new Particle(v));
-                        }
-
-                        world.addBody(BodyFactory.makeBody(particles));
-                        drawing.clear();
-                        isDrawing = false;
-                    } else if (e.getButton() == MouseEvent.BUTTON2) {
-                        if (drawing.isEmpty())
-                            return;
-
-                        for (Vector2 v : drawing) {
-                            world.addBody(BodyFactory.makeBody(Arrays.asList(new Particle[]{new Particle(v)})));
-                        }
-
-                        drawing.clear();
-                        isDrawing = false;
+                    List<Particle> particles = new ArrayList<>();
+                    for (Vector2 v : drawing) {
+                        particles.add(new Particle(v));
                     }
+
+                    world.addBody(BodyFactory.makeBody(particles));
+                } else if (e.getButton() == MouseEvent.BUTTON2) {
+                    for (Vector2 v : drawing)
+                        world.addBody(BodyFactory.makeBody(Arrays.asList(new Particle[]{new Particle(v)})));
                 }
+
+                drawing.clear();
             }
+
+            paused = false;
+            isDrawing = false;
             repaint();
         }
 
@@ -165,6 +158,8 @@ class WorldRenderPanel extends JPanel {
                 if (!drawing.contains(vec)) {
                     drawing.add(vec);
                 }
+
+                repaint();
             }
         }
     }
