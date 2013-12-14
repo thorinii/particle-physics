@@ -24,7 +24,7 @@ public class Main {
         LCTFrame lCTFrame = new LCTFrame(manager);
         lCTFrame.setVisible(true);
 
-        final List<Body> bodies = new ArrayList<>();
+        final World world = new World();
 
         final JFrame frame = new JFrame("CPU Particle-Based Physics");
         frame.getContentPane().add(new JPanel() {
@@ -32,7 +32,7 @@ public class Main {
             private final List<Vector2> drawing = new ArrayList<>();
 
             {
-                MouseAdapterImpl impl = new MouseAdapterImpl(bodies);
+                MouseAdapterImpl impl = new MouseAdapterImpl();
                 addMouseListener(impl);
                 addMouseMotionListener(impl);
             }
@@ -45,8 +45,8 @@ public class Main {
                                                              Particle.RADIUS, Particle.RADIUS);
                 g.setColor(Color.RED);
 
-                synchronized (bodies) {
-                    for (Body b : bodies) {
+                synchronized (world) {
+                    for (Body b : world.getBodies()) {
                         for (Particle p : b.getParticles()) {
                             circle.x = X_SHIFT + b.convertX(p.pos) - Particle.RADIUS / 2;
                             circle.y = Y_SHIFT + b.convertY(p.pos) - Particle.RADIUS / 2;
@@ -65,16 +65,10 @@ public class Main {
                 }
 
                 g.setColor(Color.BLACK);
-                g.drawLine(0, Y_SHIFT + FLOOR, getWidth(), Y_SHIFT + FLOOR);
+                g.drawLine(0, Y_SHIFT + (int) world.getFloor(), getWidth(), Y_SHIFT + (int) world.getFloor());
             }
 
             class MouseAdapterImpl extends MouseAdapter {
-
-                private final List<Body> bodies;
-
-                public MouseAdapterImpl(List<Body> bodies) {
-                    this.bodies = bodies;
-                }
 
                 @Override
                 public void mousePressed(MouseEvent e) {
@@ -84,9 +78,9 @@ public class Main {
 
                 @Override
                 public void mouseReleased(MouseEvent e) {
-                    synchronized (bodies) {
+                    synchronized (world) {
                         if (e.getButton() == MouseEvent.BUTTON3) {
-                            bodies.clear();
+                            world.reset();
                         } else if (isDrawing) {
                             if (drawing.isEmpty())
                                 return;
@@ -96,7 +90,7 @@ public class Main {
                                 particles.add(new Particle(v));
                             }
 
-                            bodies.add(BodyFactory.makeBody(particles));
+                            world.addBody(BodyFactory.makeBody(particles));
                             drawing.clear();
                             isDrawing = false;
                         }
@@ -124,8 +118,6 @@ public class Main {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
 
-        PhysicsSimulator simulator = new PhysicsSimulator();
-
         while (true) {
             if (FPS <= 0) {
                 Thread.sleep(100);
@@ -133,13 +125,13 @@ public class Main {
             }
 
             final float TIMESTEP = 1f / FPS;
-            synchronized (bodies) {
+            synchronized (world) {
                 for (int i = 0; i < STEPS; i++)
-                    simulator.simulate(bodies, TIMESTEP);
+                    world.step(TIMESTEP);
             }
 
-            X_SHIFT = frame.getWidth() / 2 - WALL / 2;
-            Y_SHIFT = frame.getHeight() / 2 - FLOOR / 2;
+            X_SHIFT = frame.getWidth() / 2;
+            Y_SHIFT = frame.getHeight() / 2 - (int) world.getFloor() / 2;
 
             frame.repaint();
             Thread.sleep((int) (TIMESTEP * 1000));
@@ -154,11 +146,4 @@ public class Main {
 
     @Constant(name = "Steps", constraints = "1,100")
     public static int STEPS = 1;
-
-
-    public static int FLOOR = 350;
-    public static int WALL = 350;
-
-    @Constant(name = "Size of Object", constraints = "1,100")
-    public static int SIZE_OF_OBJECT = 1;
 }

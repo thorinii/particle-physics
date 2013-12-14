@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import me.lachlanap.lct.Constant;
 
-import static me.lachlanap.cpuparticlebasedphysics.Main.FLOOR;
 import static me.lachlanap.cpuparticlebasedphysics.Particle.*;
 
 /**
@@ -22,6 +21,13 @@ public class PhysicsSimulator {
     private final List<Particle> tmp = new ArrayList<>();
     private final Map<Body, Vector2> bodyForces = new HashMap<>();
     private final Map<Body, Vector2> bodyTorques = new HashMap<>();
+
+    private World world;
+
+    public void setWorld(World world) {
+        this.world = world;
+    }
+
 
     public void simulate(List<Body> bodies, float dt) {
         for (Body b : bodies) {
@@ -69,8 +75,8 @@ public class PhysicsSimulator {
     private void processParticle(Particle p, Vector2 particleDisplacement, float dt) {
         Vector2 totalForce = new Vector2();
 
-        if (p.pos.y > FLOOR) {
-            float dist = FLOOR - p.pos.y;
+        if (p.pos.y > world.getFloor()) {
+            float dist = world.getFloor() - p.pos.y;
             totalForce.y += dist * -K * (Particle.RADIUS * 2 - dist) * (1 / dist) + -p.vel.y * DAMPING;
         }
 
