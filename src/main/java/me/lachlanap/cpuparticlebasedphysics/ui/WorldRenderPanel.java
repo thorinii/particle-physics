@@ -100,9 +100,16 @@ public class WorldRenderPanel extends JPanel {
         }
 
         g.setColor(Color.ORANGE);
-        if (isLaser)
-            g.drawLine(xShift + (int) laserBase.x, yShift + (int) laserBase.y,
-                       xShift + (int) laserTarget.x, yShift + (int) laserTarget.y);
+        if (isLaser) {
+            float m = (laserBase.y - laserTarget.y) / (laserBase.x - laserTarget.x);
+            float b = -m * (laserBase.x + xShift) + (laserBase.y + yShift);
+
+            int y_1 = (int) b;
+            int y_2 = (int) (m * (getWidth()) + b);
+
+            g.drawLine(0, y_1,
+                       getWidth(), y_2);
+        }
 
 
         g.setColor(Color.BLACK);
@@ -120,7 +127,7 @@ public class WorldRenderPanel extends JPanel {
                 paused = true;
                 isDrawing = true;
 
-                Vector2 vec = coordsFromMouse(e);
+                Vector2 vec = intCoordsFromMouse(e);
 
                 if (!drawing.contains(vec)) {
                     drawing.add(vec);
@@ -129,6 +136,7 @@ public class WorldRenderPanel extends JPanel {
                 paused = true;
                 isLaser = true;
 
+                laserBase.set(coordsFromMouse(e));
                 laserTarget.set(coordsFromMouse(e));
             }
         }
@@ -167,22 +175,27 @@ public class WorldRenderPanel extends JPanel {
         @Override
         public void mouseDragged(MouseEvent e) {
             if (isDrawing) {
-                Vector2 vec = coordsFromMouse(e);
+                Vector2 vec = intCoordsFromMouse(e);
 
                 if (!drawing.contains(vec))
                     drawing.add(vec);
             } else if (isLaser) {
-                laserBase.set(coordsFromMouse(e));
+                laserTarget.set(coordsFromMouse(e));
             }
 
             repaint();
         }
     }
 
-    private Vector2 coordsFromMouse(MouseEvent e) {
+    private Vector2 intCoordsFromMouse(MouseEvent e) {
         Vector2 vec = new Vector2(e.getX() - xShift, e.getY() - yShift);
         vec.x = (int) (vec.x / Particle.RADIUS) * Particle.RADIUS;
         vec.y = (int) (vec.y / Particle.RADIUS) * Particle.RADIUS;
+        return vec;
+    }
+
+    private Vector2 coordsFromMouse(MouseEvent e) {
+        Vector2 vec = new Vector2(e.getX() - xShift, e.getY() - yShift);
         return vec;
     }
 

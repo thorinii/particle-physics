@@ -30,11 +30,30 @@ public class BodyFactory {
         return b;
     }
 
+    /**
+     * Creates a body with the particles in World position.
+     */
     public static Body makeBody(List<Particle> particlesToUse) {
         List<Particle> particles = new ArrayList<>(particlesToUse);
         Body body = new Body(particles);
 
         for (Particle p : particles) {
+            p.body = body;
+        }
+
+        body.recalculate();
+        return body;
+    }
+
+    /**
+     * Creates a body with the particles based off an existing body.
+     */
+    public static Body makeBody(List<Particle> particlesToUse, Body b) {
+        List<Particle> particles = new ArrayList<>(particlesToUse);
+        Body body = new Body(particles);
+
+        for (Particle p : particles) {
+            p.pos.set(b.convert(p.pos));
             p.body = body;
         }
 
