@@ -1,6 +1,9 @@
 package me.lachlanap.cpuparticlebasedphysics;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.JFrame;
+import javax.swing.Timer;
 import me.lachlanap.lct.Constant;
 import me.lachlanap.lct.LCTManager;
 import me.lachlanap.lct.gui.LCTFrame;
@@ -16,35 +19,26 @@ public class Main {
 
         final World world = new World();
 
-        final JFrame frame = new JFrame("CPU Particle-Based Physics");
-        frame.getContentPane().add(new WorldRenderPanel(world));
+        JFrame frame = new JFrame("CPU Particle-Based Physics");
+        final WorldRenderPanel wrp = new WorldRenderPanel(world);
+        frame.getContentPane().add(wrp);
 
         frame.setSize(600, 500);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
 
-        while (true) {
-            if (FPS <= 0) {
-                Thread.sleep(100);
-                continue;
+        final Timer timer = new Timer(10, null);
+        timer.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                wrp.repaint();
+
+                int timestep = 1000 / FPS;
+                timer.setDelay(timestep);
             }
-
-            final float TIMESTEP = 1f / FPS;
-            synchronized (world) {
-                for (int i = 0; i < STEPS; i++)
-                    world.step(TIMESTEP);
-            }
-
-            X_SHIFT = frame.getWidth() / 2;
-            Y_SHIFT = frame.getHeight() / 2 - (int) world.getFloor() / 2;
-
-            frame.repaint();
-            Thread.sleep((int) (TIMESTEP * 1000));
-        }
+        });
+        timer.start();
     }
-
-    public static int X_SHIFT = 0;
-    public static int Y_SHIFT = 0;
 
     @Constant(name = "FPS", constraints = "0,100")
     public static int FPS = 50;
