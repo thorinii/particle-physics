@@ -8,6 +8,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Ellipse2D;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -47,12 +48,19 @@ public class Main {
 
                 synchronized (world) {
                     for (Body b : world.getBodies()) {
+                        g.setColor(Color.RED);
                         for (Particle p : b.getParticles()) {
                             circle.x = X_SHIFT + b.convertX(p.pos) - Particle.RADIUS / 2;
                             circle.y = Y_SHIFT + b.convertY(p.pos) - Particle.RADIUS / 2;
 
                             ((Graphics2D) g).fill(circle);
                         }
+
+                        g.setColor(Color.BLUE);
+                        g.drawLine(X_SHIFT + (int) b.pos.x, Y_SHIFT + (int) b.pos.y - 5,
+                                   X_SHIFT + (int) b.pos.x, Y_SHIFT + (int) b.pos.y + 5);
+                        g.drawLine(X_SHIFT + (int) b.pos.x - 5, Y_SHIFT + (int) b.pos.y,
+                                   X_SHIFT + (int) b.pos.x + 5, Y_SHIFT + (int) b.pos.y);
                     }
                 }
 
@@ -72,8 +80,17 @@ public class Main {
 
                 @Override
                 public void mousePressed(MouseEvent e) {
-                    if (e.getButton() == MouseEvent.BUTTON1)
+                    if (e.getButton() == MouseEvent.BUTTON1 || e.getButton() == MouseEvent.BUTTON2) {
                         isDrawing = true;
+
+                        Vector2 vec = new Vector2(e.getX() - X_SHIFT, e.getY() - Y_SHIFT);
+                        vec.x = (int) (vec.x / Particle.RADIUS) * Particle.RADIUS;
+                        vec.y = (int) (vec.y / Particle.RADIUS) * Particle.RADIUS;
+
+                        if (!drawing.contains(vec)) {
+                            drawing.add(vec);
+                        }
+                    }
                 }
 
                 @Override
@@ -82,17 +99,30 @@ public class Main {
                         if (e.getButton() == MouseEvent.BUTTON3) {
                             world.reset();
                         } else if (isDrawing) {
-                            if (drawing.isEmpty())
-                                return;
+                            if (e.getButton() == MouseEvent.BUTTON1) {
+                                if (drawing.isEmpty())
+                                    return;
 
-                            List<Particle> particles = new ArrayList<>();
-                            for (Vector2 v : drawing) {
-                                particles.add(new Particle(v));
+                                List<Particle> particles = new ArrayList<>();
+                                for (Vector2 v : drawing) {
+                                    particles.add(new Particle(v));
+                                }
+
+                                world.addBody(BodyFactory.makeBody(particles));
+                                drawing.clear();
+                                isDrawing = false;
+                            } else if (e.getButton() == MouseEvent.BUTTON2) {
+                                if (drawing.isEmpty())
+                                    return;
+
+                                for (Vector2 v : drawing) {
+                                    world.addBody(BodyFactory.makeBody(
+                                            Arrays.asList(new Particle[]{new Particle(v)})));
+                                }
+
+                                drawing.clear();
+                                isDrawing = false;
                             }
-
-                            world.addBody(BodyFactory.makeBody(particles));
-                            drawing.clear();
-                            isDrawing = false;
                         }
                     }
 
